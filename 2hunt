@@ -1,20 +1,21 @@
+
 local Decimals = 4
 local Clock = os.clock()
 local ValueText = "Value Is Now :"
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/drillygzzly/Roblox-UI-Libs/main/1%20Tokyo%20Lib%20(FIXED)/Tokyo%20Lib%20Source.lua"))({
     cheatname = "time2hunt", -- watermark text
-    gamename = "Jailbreake", -- watermark text
+    gamename = "Jailbreak", -- watermark text
 })
 
 library:init()
 
 local Window1  = library.NewWindow({
-    title = "Title Here | Title Here", -- Mainwindow Text
+    title = "Main | Main ", -- Mainwindow Text
     size = UDim2.new(0, 510, 0.6, 6
 )})
 
-local Tab1 = Window1:AddTab("  Tab1  ")
+local Tab1 = Window1:AddTab("  Main  ")
 local SettingsTab = library:CreateSettingsTab(Window1)
 
 --Tab1:SetText("Text")
@@ -22,96 +23,112 @@ local SettingsTab = library:CreateSettingsTab(Window1)
 local Section1 = Tab1:AddSection("Section 1", 1)
 --Section1:SetText("Text")
 
-local isRunning = false
-local loopThread
+
 
 Section1:AddToggle({
     text = "Toggle1",
     state = false,
+    risky = true,
     tooltip = "tooltip1",
     flag = "Toggle_1",
-    risky = true,
     callback = function(v)
-        isRunning = v
-        if isRunning then
-            loopThread = coroutine.create(function()
-                while isRunning do
-                    wait(1)
-                    spam()
-                    wait(1)
-                end
-            end)
-            coroutine.resume(loopThread)
+        getgenv().toggled = v
+        if v then
+            task.spawn(spam) 
+        else
+            getgenv().killauraloaded = false 
         end
     end
 })
 
-
-
-
 function spam()
-    getgenv().toggled = true-- change this to false to stop kill aura. 
-
     if getgenv().killauraloaded then return end
+    getgenv().killauraloaded = true
 
-    local old = require(game:GetService("ReplicatedStorage").Module.RayCast).RayIgnoreNonCollideWithIgnoreList
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local LocalPlayer = Players.LocalPlayer
+    local oldRayIgnore = require(ReplicatedStorage.Module.RayCast).RayIgnoreNonCollideWithIgnoreList
 
     local function getNearestEnemy()
-    local nearestDistance, nearestEnemy = 3000, nil
-    local myTeam = tostring(game:GetService("Players").LocalPlayer.Team)
-    for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-        local theirTeam = tostring(v.Team)
-     if ((myTeam == "Police" and theirTeam == "Criminal") or theirTeam == "Police") and theirTeam ~= myTeam and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-      if (v.Character.HumanoidRootPart.Position - game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < nearestDistance then
-          nearestDistance, nearestEnemy = (v.Character.HumanoidRootPart.Position - game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position).Magnitude, v
-      end
-     end
-     end
-    return nearestEnemy
-    end
-     local function shoot()
-    local currentGun = require(game:GetService("ReplicatedStorage").Game:WaitForChild("ItemSystem"):WaitForChild("ItemSystem")).GetLocalEquipped()
-    if not currentGun then return end
-    require(game:GetService("ReplicatedStorage").Game:WaitForChild("Item"):WaitForChild("Gun"))._attemptShoot(currentGun)
-end
-getgenv().killauraloaded = true
-while wait(0.5) do
- if getgenv().toggled == false then continue end
- if not game:GetService("Players").LocalPlayer.Character then continue end
- if not game:GetService("Players").LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
-    
-    local nearestEnemy = getNearestEnemy()
-    if nearestEnemy then
-        require(game:GetService("ReplicatedStorage").Module.RayCast).RayIgnoreNonCollideWithIgnoreList = function(...)
-         local arg = {old(...)}
-         if (tostring(getfenv(2).script) == "BulletEmitter" or tostring(getfenv(2).script) == "Taser") and nearestEnemy and nearestEnemy.Character and nearestEnemy.Character:FindFirstChild("HumanoidRootPart") and nearestEnemy.Character:FindFirstChild("Humanoid") and (nearestEnemy.Character.HumanoidRootPart.Position - game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 3000 and nearestEnemy.Character.Humanoid.Health > 0 then
-            arg[1] = nearestEnemy.Character.HumanoidRootPart
-            arg[2] = nearestEnemy.Character.HumanoidRootPart.Position
+        local nearestDistance, nearestEnemy = 3000, nil
+        local myTeam = tostring(LocalPlayer.Team)
+
+        for _, v in pairs(Players:GetPlayers()) do
+            local theirTeam = tostring(v.Team)
+            if ((myTeam == "Police" and theirTeam == "Criminal") or theirTeam == "Police")
+                and theirTeam ~= myTeam
+                and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+
+                local dist = (v.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if dist < nearestDistance then
+                    nearestDistance, nearestEnemy = dist, v
+                end
+            end
         end
-         return unpack(arg)
-     end
-     if not game:GetService("Players").LocalPlayer.Folder:FindFirstChild("Sniper") then
-         fireclickdetector(workspace.Givers:GetChildren()[17].ClickDetector)
-     end
-     if game:GetService("Players").LocalPlayer.Folder:FindFirstChild("Sniper") then
-         while game:GetService("Players").LocalPlayer.Folder:FindFirstChild("Sniper") and nearestEnemy and nearestEnemy.Character and nearestEnemy.Character:FindFirstChild("HumanoidRootPart") and nearestEnemy.Character:FindFirstChild("Humanoid") and (nearestEnemy.Character.HumanoidRootPart.Position - game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 3000 and nearestEnemy.Character.Humanoid.Health > 0 do
-             game:GetService("Players").LocalPlayer.Folder.Sniper.InventoryEquipRemote:FireServer(true)
-             wait()
-             shoot()
-         end
-     end
-     if game:GetService("Players").LocalPlayer.Folder:FindFirstChild("Sniper") then
-         game:GetService("Players").LocalPlayer.Folder.Sniper.InventoryEquipRemote:FireServer(false)
-     end
-    else
-        require(game:GetService("ReplicatedStorage").Module.RayCast).RayIgnoreNonCollideWithIgnoreList = old
+
+        return nearestEnemy
     end
+
+    local function shoot()
+        local currentGun = require(ReplicatedStorage.Game:WaitForChild("ItemSystem"):WaitForChild("ItemSystem")).GetLocalEquipped()
+        if not currentGun then return end
+        require(ReplicatedStorage.Game:WaitForChild("Item"):WaitForChild("Gun"))._attemptShoot(currentGun)
+    end
+
+    while task.wait(0.5) do
+        if not getgenv().toggled then break end
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
+
+        local nearestEnemy = getNearestEnemy()
+
+        if nearestEnemy then
+            require(ReplicatedStorage.Module.RayCast).RayIgnoreNonCollideWithIgnoreList = function(...)
+                local args = {oldRayIgnore(...)}
+                local scriptName = tostring(getfenv(2).script)
+
+                if (scriptName == "BulletEmitter" or scriptName == "Taser")
+                    and nearestEnemy.Character
+                    and nearestEnemy.Character:FindFirstChild("HumanoidRootPart")
+                    and nearestEnemy.Character:FindFirstChild("Humanoid")
+                    and nearestEnemy.Character.Humanoid.Health > 0
+                    and (nearestEnemy.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 3000 then
+
+                    args[1] = nearestEnemy.Character.HumanoidRootPart
+                    args[2] = nearestEnemy.Character.HumanoidRootPart.Position
+                end
+
+                return unpack(args)
+            end
+
+            if not LocalPlayer.Folder:FindFirstChild("Sniper") then
+                fireclickdetector(workspace.Givers:GetChildren()[17].ClickDetector)
+            end
+
+            if LocalPlayer.Folder:FindFirstChild("Sniper") then
+                while getgenv().toggled
+                    and LocalPlayer.Folder:FindFirstChild("Sniper")
+                    and nearestEnemy
+                    and nearestEnemy.Character
+                    and nearestEnemy.Character:FindFirstChild("HumanoidRootPart")
+                    and nearestEnemy.Character:FindFirstChild("Humanoid")
+                    and nearestEnemy.Character.Humanoid.Health > 0
+                    and (nearestEnemy.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 3000 do
+
+                    LocalPlayer.Folder.Sniper.InventoryEquipRemote:FireServer(true)
+                    task.wait()
+                    shoot()
+                end
+
+                LocalPlayer.Folder.Sniper.InventoryEquipRemote:FireServer(false)
+            end
+        else
+            require(ReplicatedStorage.Module.RayCast).RayIgnoreNonCollideWithIgnoreList = oldRayIgnore
+        end
+    end
+
+    getgenv().killauraloaded = false
 end
 
-
-
-    
-
-local Time = (string.format("%."..tostring(Decimals).."f", os.clock() - Clock))
-library:SendNotification(("Loaded In "..tostring(Time)), 6)
-end
+local Time = (string.format("%."..tostring(Decimals or 2).."f", os.clock() - (Clock or 0)))
+library:SendNotification("Loaded In " .. tostring(Time), 6)
